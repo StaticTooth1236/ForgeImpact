@@ -1,0 +1,121 @@
+{
+  "company": "AetherForge Systems",
+  "program": "Modular Autonomous Aerial Platform (MAAP-1) Swarm System",
+  "description": "Heavy-lift unmanned helicopter with modular payloads and swarm autonomy for firefighting and military logistics/ISR missions.",
+  "changes": [
+    {
+      "change_id": "MAAP-82916",
+      "description": "Proposed engineering change to improve modular payload interface or swarm coordination capability.",
+      "affected_parts": [
+        "MAAP-1607",
+        "MAAP-5681",
+        "MAAP-1530"
+      ],
+      "reason": "Improved swarm coordination",
+      "proposed_solution": "Update design, software, and manufacturing processes with appropriate validation."
+    },
+    {
+      "change_id": "MAAP-74758",
+      "description": "Proposed engineering change to improve modular payload interface or swarm coordination capability.",
+      "affected_parts": [
+        "MAAP-0676",
+        "MAAP-8611",
+        "MAAP-6500",
+        "MAAP-3030"
+      ],
+      "reason": "Enhanced payload modularity",
+      "proposed_solution": "Update design, software, and manufacturing processes with appropriate validation."
+    },
+    {
+      "change_id": "MAAP-14542",
+      "description": "Proposed engineering change to improve modular payload interface or swarm coordination capability.",
+      "affected_parts": [
+        "MAAP-7345",
+        "MAAP-0620",
+        "MAAP-9855",
+        "MAAP-9447"
+      ],
+      "reason": "Regulatory compliance",
+      "proposed_solution": "Update design, software, and manufacturing processes with appropriate validation."
+    },
+    {
+      "change_id": "MAAP-80178",
+      "description": "Proposed engineering change to improve modular payload interface or swarm coordination capability.",
+      "affected_parts": [
+        "MAAP-3766",
+        "MAAP-1674",
+        "MAAP-7628"
+      ],
+      "reason": "Regulatory compliance",
+      "proposed_solution": "Update design, software, and manufacturing processes with appropriate validation."
+    },
+    {
+      "change_id": "MAAP-4345",
+      "description": "Proposed engineering change to improve modular payload interface or swarm coordination capability.",
+      "affected_parts": [
+        "MAAP-1318",
+        "MAAP-8300",
+        "MAAP-3203",
+        "MAAP-0511"
+      ],
+      "reason": "Improved swarm coordination",
+      "proposed_solution": "Update design, software, and manufacturing processes with appropriate validation."
+    },
+    {
+      "change_id": "MAAP-4796",
+      "description": "Proposed engineering change to improve modular payload interface or swarm coordination capability.",
+      "affected_parts": [
+        "MAAP-4843",
+        "MAAP-8818",
+        "MAAP-2442"
+      ],
+      "reason": "Improved swarm coordination",
+      "proposed_solution": "Update design, software, and manufacturing processes with appropriate validation."
+    },
+    {
+      "change_id": "MAAP-69965",
+      "description": "Proposed engineering change to improve modular payload interface or swarm coordination capability.",
+      "affected_parts": [
+        "MAAP-9610",
+        "MAAP-7166"
+      ],
+      "reason": "Better environmental resilience",
+      "proposed_solution": "Update design, software, and manufacturing processes with appropriate validation."
+    },
+    {
+      "change_id": "ECR-001",
+      "description": "The MAAP-1 Swarm System's autonomous navigation system requires improvement to enhance situational awareness and group formation accuracy in dynamic and complex environments. This is particularly crucial for wildfire response missions where terrain can rapidly change and group formation is critical for effective containment. For military logistics and ISR missions, improved situational awareness enables more efficient and secure transport of personnel and cargo.",
+      "affected_parts": [
+        "AER-1001: MAAP-1 Swarm System's Autonomous Navigation Computer",
+        "SFR-5000: Firefighting Modular Payload's LIDAR Module",
+        "LOG-2000: Logistics Modular Payload's GPS Receiver",
+        "ISR-3000: ISR Modular Payload's Sensor Suite"
+      ],
+      "reason": "To improve the MAAP-1 Swarm System's performance in dynamic and complex environments, reducing the risk of collision and improving mission effectiveness.",
+      "proposed_solution": "Implement a 3D mapping and terrain analysis algorithm that utilizes real-time sensor data from the MAAP-1 Swarm System's onboard sensors and external data sources. This will enable more accurate terrain awareness and group formation, even in high-stress and rapidly changing environments."
+    },
+    {
+      "change_id": "MAAP-13353",
+      "description": "Proposed engineering change to improve modular payload interface or swarm coordination capability.",
+      "affected_parts": [
+        "MAAP-6766",
+        "MAAP-0068",
+        "MAAP-3247"
+      ],
+      "reason": "Enhanced payload modularity",
+      "proposed_solution": "Update design, software, and manufacturing processes with appropriate validation."
+    },
+    {
+      "change_id": "MAAP-63101",
+      "description": "Proposed engineering change to improve modular payload interface or swarm coordination capability.",
+      "affected_parts": [
+        "MAAP-3221",
+        "MAAP-7243",
+        "MAAP-0169",
+        "MAAP-4991"
+      ],
+      "reason": "Better environmental resilience",
+      "proposed_solution": "Update design, software, and manufacturing processes with appropriate validation."
+    }
+  ]
+}
