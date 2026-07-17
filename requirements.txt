@@ -3,6 +3,7 @@ plotly
 fpdf2
 python-dotenv
 anthropic
+groq
 llama-index
 llama-index-embeddings-huggingface
 llama-index-readers-file
