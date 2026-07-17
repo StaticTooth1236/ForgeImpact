@@ -5,11 +5,11 @@ from groq import Groq
 load_dotenv()
 
 class LLMClient:
-    def __init__(self, model: str = "llama-3.1-8b-instant"):
+    def __init__(self, model: str = "openai/gpt-oss-120b"):
         self.client = Groq(api_key=os.getenv("GROQ_API_KEY"))
         self.model = model
-        self.max_tokens = 800
-    
+        self.max_tokens = 2000
+
     def chat(self, user_message: str, system_prompt: str = "You are a helpful assistant.", temperature: float = 0.7) -> str:
         try:
             completion = self.client.chat.completions.create(
@@ -22,13 +22,17 @@ class LLMClient:
                 max_tokens=self.max_tokens
             )
             response = completion.choices[0].message.content.strip()
-            print("✅ Success! Response:", response)
             return response
         except Exception as e:
-            print("❌ Error:", str(e))
+            print(f"❌ Error: {e}")
             return str(e)
 
-# Test
+    def get_model_name(self):
+        return self.model
+
+
 if __name__ == "__main__":
     llm = LLMClient()
-    llm.chat("Say hello and confirm you're working.")
+    print(f"Using model: {llm.get_model_name()}")
+    response = llm.chat("Say hello and confirm the model name.")
+    print(response)

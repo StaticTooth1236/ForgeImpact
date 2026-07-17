@@ -1,5 +1,9 @@
+streamlit
+plotly
+fpdf2
 python-dotenv
-requests
-groq
-faker
-pandas
+anthropic
+llama-index
+llama-index-embeddings-huggingface
+llama-index-readers-file
+sentence-transformers
