@@ -5,7 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.claude_client import ClaudeClient
 from src.rag_system import query_rag
 
-llm = ClaudeClient(model="claude-3-5-sonnet-20241022")
+llm = ClaudeClient(model="claude-sonnet-4-6")
 
 def analyze_cost_margin_impact(change_description: str) -> str:
     """
