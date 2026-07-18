@@ -43,8 +43,10 @@ st.markdown("---")
 # ===================== 2. HOW ARIA WORKS =====================
 st.header("How ARIA Works", divider="blue")
 st.markdown("""
-ARIA uses specialized agents and smart model routing to balance **cost, speed, and accuracy**. 
-Simple questions are handled by faster, lower-cost models, while complex questions use more powerful models.
+ARIA uses specialized agents and smart model routing to balance **cost, speed, and accuracy**.
+
+- The **Program Q&A Chat** uses **Claude Haiku** for fast responses.
+- The **ARIA Tool** uses **Claude Haiku** for single agent analysis and **Claude Sonnet** for high-quality synthesis in multi-agent mode.
 """)
 
 st.markdown("---")
@@ -64,7 +66,7 @@ st.header("Try ARIA", divider="blue")
 
 col1, col2 = st.columns(2)
 
-# ===================== LEFT: PROGRAM Q&A CHAT (4-TIER ROUTING) =====================
+# ===================== LEFT: PROGRAM Q&A CHAT (FAST - HAIKU ONLY) =====================
 with col1:
     st.subheader("Program Q&A Chat")
     st.caption("Ask questions about the synthetic MAAP program")
@@ -91,41 +93,8 @@ with col1:
             st.markdown(prompt)
 
         with st.chat_message("assistant"):
-            with st.spinner("Analyzing question complexity..."):
+            with st.spinner("Thinking..."):
                 try:
-                    from src.claude_client import ClaudeClient
-
-                    # === 4-TIER CLASSIFIER ===
-                    router = ClaudeClient(model="claude-haiku-4-5-20251001")
-
-                    classification_prompt = f"""Classify the following question into one of these categories:
-
-- very_simple: Basic factual lookup, very short and direct
-- simple: Straightforward question, easy to answer
-- medium: Requires some explanation or connecting ideas
-- complex: Requires reasoning, trade-offs, multi-step thinking, or deeper analysis
-
-Respond with ONLY one of these words: very_simple, simple, medium, or complex
-
-Question: {prompt}"""
-
-                    classification = router.chat(classification_prompt).strip().lower()
-
-                    # === Choose model based on classification ===
-                    if classification == "very_simple":
-                        model_to_use = "llama-3.1-8b-instant"
-                        model_label = "Llama 3.1 8B (Groq - Very Fast)"
-                    elif classification in ["simple", "medium"]:
-                        model_to_use = "claude-haiku-4-5-20251001"
-                        model_label = "Claude Haiku (Fast & Efficient)"
-                    else:
-                        model_to_use = "claude-sonnet-4-5-20250929"
-                        model_label = "Claude Sonnet (High Accuracy)"
-
-                    # Show routing decision
-                    st.caption(f"**Complexity:** {classification.replace('_', ' ').title()} | **Model:** {model_label}")
-
-                    # === Get response using RAG ===
                     from src.rag_system import query_rag
                     response = query_rag(prompt)
 

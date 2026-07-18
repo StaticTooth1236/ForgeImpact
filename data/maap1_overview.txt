@@ -1,3 +1,0 @@
-AetherForge MAAP-1 Modular Autonomous Aerial Platform Swarm System
-
-The MAAP-1 is a heavy-lift unmanned helicopter designed for modular operations. It supports firefighting (water/retardant), military logistics, and ISR missions. The system can operate autonomously in swarms and uses mobile 18-wheeler trailer bases for launch, recovery, and maintenance.

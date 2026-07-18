@@ -1,167 +1,140 @@
 import sys
 import os
-from datetime import datetime
-from typing import Dict, ClassVar, Iterator
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from dotenv import load_dotenv
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.core.llms import CustomLLM, CompletionResponse, LLMMetadata
-from llama_index.core.llms.callbacks import llm_completion_callback
+import concurrent.futures
+import anthropic
 
 from src.claude_client import ClaudeClient
+from src.rag_system import query_rag
 
-load_dotenv()
+from src.change_impact_agent import analyze_change_impact
+from src.cost_margin_impact_agent import analyze_cost_margin_impact
+from src.manufacturing_production_agent import analyze_manufacturing_impact
+from src.supply_chain_procurement_agent import analyze_supply_chain_impact
+from src.risk_schedule_impact_agent import analyze_risk_schedule_impact
 
-DATA_FOLDER = "data"
-EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
-OUTPUT_DIR = "outputs/synthesis_reports"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
+claude = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-print("Loading documents for Synthesis Agent...")
-documents = SimpleDirectoryReader(DATA_FOLDER).load_data()
+def get_relevant_documents(change_description: str, top_k: int = 8) -> list:
+    results = query_rag(change_description, top_k=top_k * 2)
+    high_priority = [
+        "maap1_integrated_master_schedule.md",
+        "maap1_risk_register.md",
+        "maap1_program_requirements_baseline.md",
+        "maap1_financial_and_contract_management.md",
+        "maap1_manufacturing_ramp_plan.md",
+        "maap1_supply_chain_procurement_plan.md",
+        "maap1_bill_of_materials.md",
+    ]
+    prioritized = []
+    seen = set()
+    for doc_name in high_priority:
+        matches = [r for r in results if doc_name.lower() in r.lower()]
+        for m in matches[:2]:
+            if m not in seen:
+                prioritized.append(m)
+                seen.add(m)
+    remaining = [r for r in results if r not in seen]
+    prioritized.extend(remaining[:top_k - len(prioritized)])
+    return prioritized[:top_k]
 
-Settings.embed_model = HuggingFaceEmbedding(model_name=EMBEDDING_MODEL)
+def analyze_document_impact(document_name: str, change_description: str) -> str:
+    context = query_rag(f"how does this change affect {document_name}: {change_description}", top_k=5)
+    prompt = f"""You are an expert aerospace program analyst.
 
-class ClaudeLLMWrapper(CustomLLM):
-    context_window: ClassVar[int] = 200000
-    num_output: ClassVar[int] = 4000
-    model_name: ClassVar[str] = "claude-sonnet-4-5-20250929"
+Analyze the impact of the following proposed change on the document: **{document_name}**
 
-    def __init__(self):
-        super().__init__()
-        self._client = ClaudeClient(model=self.model_name)
-
-    @property
-    def metadata(self) -> LLMMetadata:
-        return LLMMetadata(
-            context_window=self.context_window,
-            num_output=self.num_output,
-            model_name=self.model_name,
-        )
-
-    @llm_completion_callback()
-    def complete(self, prompt: str, **kwargs) -> CompletionResponse:
-        response = self._client.chat(prompt)
-        return CompletionResponse(text=response)
-
-    @llm_completion_callback()
-    def stream_complete(self, prompt: str, **kwargs) -> Iterator[CompletionResponse]:
-        response = self.complete(prompt, **kwargs)
-        yield response
-
-Settings.llm = ClaudeLLMWrapper()
-
-index = VectorStoreIndex.from_documents(documents)
-query_engine = index.as_query_engine(similarity_top_k=6)
-
-def synthesize_change_analysis(
-    change_description: str, 
-    agent_outputs: Dict[str, str]
-) -> str:
-    """
-    Takes outputs from multiple specialized agents and produces an
-    Executive Summary + PMP-style Project Plan.
-    """
-
-    # Combine all agent outputs into context
-    combined_context = ""
-    for agent_name, output in agent_outputs.items():
-        combined_context += f"\n\n=== {agent_name} Agent Output ===\n{output}\n"
-
-    system_prompt = """You are a senior Aerospace Program Manager responsible for synthesizing cross-functional change impact analysis.
-
-Your job is to create a clear, leadership-ready deliverable based on input from multiple specialized agents.
-
-Use this exact structure:
-
-## Executive Summary
-
-**Proposed Change:**  
-[Clear, concise restatement]
-
-**Overall Program Impact Level:** High / Medium / Low + one-sentence justification
-
-**Key Findings Across Functions:**
-- Change Impact
-- Risk & Schedule
-- Supply Chain & Procurement
-- Manufacturing & Production
-(Highlight the most important 3–5 points)
-
-**Recommended Decision:**  
-Approve / Approve with Conditions / Reject + brief rationale
-
-**Top Risks & Opportunities:**
-- List the highest priority risks and any notable opportunities
-
----
-
-## Project Plan (PMP Style)
-
-### 1. Change Description & Objectives
-### 2. Key Actions, Owners & Timeline
-### 3. Major Milestones & Dependencies
-### 4. Resource & Budget Implications
-### 5. Risk Mitigation Plan
-### 6. Recommended Next Steps & Decision Gates
-
-**Confidence Level:** X/10  
-(Explain any areas of uncertainty)
-"""
-
-    synthesis_prompt = f"""{system_prompt}
-
-**Original Proposed Change:**  
+Proposed Change:
 {change_description}
 
-**Combined Analysis from Domain Experts:**  
-{combined_context}
+Relevant content from {document_name}:
+{context}
 
-Now generate the Executive Summary + Project Plan following the structure above. Be concise but actionable."""
+Provide a structured assessment with:
+- Impact Level (High / Medium / Low / None)
+- Key Sections Affected
+- Specific Impacts
+- New or Modified Risks
+- Recommended Updates
 
-    response = Settings.llm.complete(synthesis_prompt)
-    return response.text
+Be specific."""
+    message = claude.messages.create(
+        model="claude-3-5-sonnet-20241022",
+        max_tokens=3500,
+        system="You are a precise aerospace program analyst.",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return f"=== Impact on {document_name} ===\n{message.content[0].text}"
 
+def synthesize_pmp(change_description: str, specialized_outputs: dict, document_impacts: list) -> str:
+    impacts_text = "\n\n".join(document_impacts)
+    specialized_text = "\n\n".join([f"**{k}:**\n{v}" for k, v in specialized_outputs.items()])
 
-def save_synthesis_report(change_description: str, report: str):
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{OUTPUT_DIR}/Synthesis_Report_{timestamp}.md"
-    
-    with open(filename, "w", encoding="utf-8") as f:
-        f.write(f"# MAAP-1 Change Analysis - Executive Synthesis\n\n")
-        f.write(f"**Date:** {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n")
-        f.write(f"**Proposed Change:** {change_description}\n\n")
-        f.write("---\n\n")
-        f.write(report)
-    
-    return filename
+    prompt = f"""You are a senior aerospace Program Manager creating a Project Management Plan update.
 
+**Proposed Change:**
+{change_description}
 
-# ====================== STANDALONE TEST ======================
-if __name__ == "__main__":
-    print("\n=== MAAP-1 Synthesis Agent (Standalone Test) ===\n")
-    
-    change = input("Proposed Change: ").strip()
-    if not change or change.lower() in ["quit", "exit"]:
-        print("Exiting...")
-        exit()
+**Specialized Agent Analysis:**
+{specialized_text}
 
-    # For testing, we'll use dummy agent outputs
-    # In real use, this will come from the Coordinator
-    dummy_outputs = {
-        "Change Impact": "High impact on structure and certification...",
-        "Risk & Schedule": "Medium schedule risk with 3-4 month engineering cycle...",
-        "Supply Chain": "Medium-high supply chain impact...",
-        "Manufacturing": "Medium manufacturing impact..."
+**Document-Level Impact Assessments:**
+{impacts_text}
+
+Produce a Project Management Plan update. For missing sections write: "Data not yet available – placeholder section"
+
+Use this structure:
+1. Introduction
+2. Project Scope
+3. Milestone List & Schedule Baseline
+4. Change Management Plan
+5. Cost Management Plan & Cost Baseline
+6. Risk Management Plan & Risk Register
+7. Procurement / Supply Chain Management Plan
+8. Quality Management Plan
+9. Staffing & Resource Management (Data not yet available – placeholder section)
+10. Overall Assessment & Recommended Path Forward
+"""
+    message = claude.messages.create(
+        model="claude-3-5-sonnet-20241022",
+        max_tokens=10000,
+        system="You are a senior aerospace Program Manager. Produce clear Project Management Plan content.",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return message.content[0].text
+
+def synthesize_change_analysis(change_description: str) -> str:
+    print(">>> RUNNING LATEST VERSION OF synthesis_agent.py <<<")
+    print("Running specialized agents in parallel...")
+
+    specialized_agents = {
+        "change_impact": analyze_change_impact,
+        "cost_margin": analyze_cost_margin_impact,
+        "manufacturing": analyze_manufacturing_impact,
+        "supply_chain": analyze_supply_chain_impact,
+        "risk_schedule": analyze_risk_schedule_impact,
     }
 
-    print("\nSynthesizing analysis...")
-    report = synthesize_change_analysis(change, dummy_outputs)
-    
-    print("\n" + report)
-    
-    filepath = save_synthesis_report(change, report)
-    print(f"\n✅ Synthesis report saved to: {filepath}")
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = {executor.submit(func, change_description): name for name, func in specialized_agents.items()}
+        specialized_outputs = {name: future.result() for future, name in futures.items()}
+
+    print("Identifying relevant documents...")
+    relevant_docs = get_relevant_documents(change_description, top_k=8)
+
+    print("Running parallel document impact analysis...")
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [executor.submit(analyze_document_impact, doc, change_description) for doc in relevant_docs]
+        document_impacts = [f.result() for f in concurrent.futures.as_completed(futures)]
+
+    print("Synthesizing into Project Management Plan...")
+    return synthesize_pmp(change_description, specialized_outputs, document_impacts)
+
+if __name__ == "__main__":
+    test_change = "Change the primary battery supplier from Samsung SDI to LG Energy Solution. Assess the impact on certification timeline, unit cost, and supply chain risk."
+    result = synthesize_change_analysis(test_change)
+    print("\n" + "="*80)
+    print("PROJECT MANAGEMENT PLAN OUTPUT")
+    print("="*80 + "\n")
+    print(result)

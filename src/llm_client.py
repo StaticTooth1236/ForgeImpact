@@ -8,7 +8,7 @@ class LLMClient:
     def __init__(self, model: str = "openai/gpt-oss-120b"):
         self.client = Groq(api_key=os.getenv("GROQ_API_KEY"))
         self.model = model
-        self.max_tokens = 2000
+        self.max_tokens = 5000
 
     def chat(self, user_message: str, system_prompt: str = "You are a helpful assistant.", temperature: float = 0.7) -> str:
         try:

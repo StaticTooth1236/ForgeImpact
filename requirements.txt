@@ -8,3 +8,4 @@ llama-index
 llama-index-embeddings-huggingface
 llama-index-readers-file
 sentence-transformers
+reportlab
