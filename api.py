@@ -38,7 +38,12 @@ app = FastAPI(title="ARIA API")
 # Locked down to the real frontend domain at deploy time.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://aria-impact.com",
+        "https://www.aria-impact.com",
+        "https://YOUR-PROJECT.vercel.app",   # your actual .vercel.app URL
+        "http://localhost:5173",             # keep local dev working
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
