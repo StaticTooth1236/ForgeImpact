@@ -3,21 +3,31 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.claude_client import ClaudeClient
-from src.rag_system import query_rag
+from src.rag_system import query_rag, format_context
 
 llm = ClaudeClient(model="claude-sonnet-4-6")
 
 def analyze_change_impact(change_description: str) -> str:
     """
     Analyzes the technical and programmatic impact of a proposed change.
-    Strongly targets: Program Requirements Baseline, Key Specifications, IMS, Risk Register, and TEMP.
+    Strongly targets: Program Requirements Baseline, Key Specifications, IMS,
+    Risk Register, and TEMP.
+
+    Retrieval notes:
+    - file_filter GUARANTEES chunks come from the intended document instead of
+      hoping the query phrasing steers retrieval there.
+    - format_context() turns the structured results into clean, labeled
+      excerpts. Never interpolate query_rag()'s raw return into a prompt —
+      it's a list of dicts, not text.
+    - If any section below comes back as "(no relevant content found...)",
+      the file_filter string doesn't match a real file in data/ — run
+      `ls data/` and adjust the filter to match the actual filename.
     """
-    # More targeted + higher volume retrieval from assigned documents
-    prb_context   = query_rag(f"program requirements baseline change impact of: {change_description}", top_k=5)
-    specs_context = query_rag(f"key specifications change impact of: {change_description}", top_k=4)
-    ims_context   = query_rag(f"integrated master schedule change impact of: {change_description}", top_k=5)
-    risk_context  = query_rag(f"risk register change impact of: {change_description}", top_k=4)
-    temp_context  = query_rag(f"test evaluation master plan change impact of: {change_description}", top_k=4)
+    prb_context   = format_context(query_rag(change_description, top_k=5, file_filter="program_requirements_baseline"))
+    specs_context = format_context(query_rag(change_description, top_k=4, file_filter="key_specifications"))
+    ims_context   = format_context(query_rag(change_description, top_k=5, file_filter="integrated_master_schedule"))
+    risk_context  = format_context(query_rag(change_description, top_k=4, file_filter="risk_register"))
+    temp_context  = format_context(query_rag(change_description, top_k=4, file_filter="test_evaluation_master_plan"))
 
     combined_context = f"""
 === Program Requirements Baseline ===
@@ -38,7 +48,7 @@ def analyze_change_impact(change_description: str) -> str:
 
     prompt = f"""You are an experienced Aerospace Change Impact Analyst.
 
-Analyze the proposed change using the context below. You must draw from **all** the document sections provided and avoid over-relying on any single source (especially the Risk Register).
+Analyze the proposed change using the context below. You must draw from **all** the document sections provided and avoid over-relying on any single source (especially the Risk Register). If a section reports no relevant content, note it briefly and move on — do not invent content for it.
 
 Focus on:
 - Technical impact (design, systems, interfaces)
