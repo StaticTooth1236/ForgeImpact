@@ -6,6 +6,7 @@ const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const REPLAY_SPEED = 6;
 const REPLAY_MAX_GAP_MS = 1200;
+const STREAM_STALL_MS = 90000; // abort a live stream after 90s of silence
 
 // Preset texts must stay EXACTLY in sync with record_demo.py.
 const PRESETS = [
@@ -84,6 +85,7 @@ export default function AriaTool() {
   const flushTimer = useRef(null);
   const sheetRef = useRef(null);
   const timerRef = useRef(null);
+  const finishedRef = useRef(false); // set when a done/error event arrives
 
   useEffect(() => {
     if (status === "running") {
@@ -141,10 +143,12 @@ export default function AriaTool() {
         clearTimeout(flushTimer.current);
         flushTimer.current = null;
         pendingTokens.current = "";
+        finishedRef.current = true;
         setPmp(evt.pmp);
         setStatus("done");
         break;
       case "error":
+        finishedRef.current = true;
         setErrorMsg(evt.message || "The analysis stopped unexpectedly.");
         setStatus("error");
         break;
@@ -160,6 +164,7 @@ export default function AriaTool() {
     setPmp("");
     setErrorMsg("");
     setElapsed(0);
+    finishedRef.current = false;
   }
 
   async function tryReplay(text) {
@@ -194,6 +199,14 @@ export default function AriaTool() {
     setStatus("running");
     resetRun();
 
+    // Watchdog: abort the request if the stream goes silent for too long,
+    // instead of freezing the console forever.
+    const controller = new AbortController();
+    let lastData = Date.now();
+    const watchdog = setInterval(() => {
+      if (Date.now() - lastData > STREAM_STALL_MS) controller.abort();
+    }, 5000);
+
     try {
       const res = await fetch(`${API}/api/analyze`, {
         method: "POST",
@@ -202,6 +215,7 @@ export default function AriaTool() {
           "X-Access-Code": accessCode,
         },
         body: JSON.stringify({ change_description: text }),
+        signal: controller.signal,
       });
       if (res.status === 401) {
         throw new Error(
@@ -219,6 +233,7 @@ export default function AriaTool() {
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
+        lastData = Date.now();
         buffer += decoder.decode(value, { stream: true });
         const frames = buffer.split("\n\n");
         buffer = frames.pop();
@@ -232,9 +247,25 @@ export default function AriaTool() {
           }
         }
       }
+
+      // Stream closed without a done/error event: fail loudly, don't freeze.
+      if (!finishedRef.current) {
+        throw new Error(
+          "the connection ended before the plan finished. The partial draft above is preserved — try the run again, or use a preset replay."
+        );
+      }
     } catch (err) {
-      setErrorMsg(String(err.message || err));
+      if (finishedRef.current) return; // already resolved via done/error event
+      if (err.name === "AbortError") {
+        setErrorMsg(
+          "the live stream went silent for 90 seconds and was stopped. The partial draft above is preserved — try the run again, or use a preset replay."
+        );
+      } else {
+        setErrorMsg(String(err.message || err));
+      }
       setStatus("error");
+    } finally {
+      clearInterval(watchdog);
     }
   }
 

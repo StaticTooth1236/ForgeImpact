@@ -16,6 +16,7 @@ import concurrent.futures
 
 from dotenv import load_dotenv
 import anthropic
+import httpx
 
 from src.rag_system import query_rag, format_context, get_index
 
@@ -34,7 +35,11 @@ MODEL = "claude-sonnet-4-6"
 SYNTHESIS_MAX_TOKENS = 32000  # full PMPs run long; Sonnet 4.6 supports up to 64K out
 DOC_IMPACT_MAX_TOKENS = 3000
 
-claude = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+claude = anthropic.Anthropic(
+    api_key=os.getenv("ANTHROPIC_API_KEY"),
+    timeout=httpx.Timeout(connect=15.0, read=90.0, write=15.0, pool=15.0),
+    max_retries=2,
+)
 
 # ---------------------------------------------------------------------------
 # Document coverage: manifest-first, retrieval second.
