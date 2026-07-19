@@ -51,14 +51,14 @@ function AriaLogo({ size = 34 }) {
   );
 }
 
-/* ---- MAAP-1 technical line art, side profile ------------------------- */
+/* ---- MAAP-1 technical drawing: airframe + interchangeable modules ----- */
 function AircraftArt() {
   return (
     <svg
       className="hero-art"
-      viewBox="0 0 920 340"
+      viewBox="0 0 920 452"
       role="img"
-      aria-label="Technical side-profile drawing of the MAAP-1 tandem-rotor heavy-lift autonomous helicopter"
+      aria-label="Detailed technical drawing of the MAAP-1 uncrewed tandem-rotor heavy-lift aircraft, with its three interchangeable mission modules: cargo, firefighting, and ISR"
     >
       <defs>
         <linearGradient id="heroGrad" x1="0" y1="0" x2="1" y2="0">
@@ -66,48 +66,151 @@ function AircraftArt() {
           <stop offset="1" stopColor="#7A3BE0" />
         </linearGradient>
       </defs>
+
+      {/* ---- airframe ---- */}
       <g stroke="var(--steel)" strokeWidth="1.3" fill="none" strokeLinecap="round">
-        <path d="M150 210 q10 -34 52 -40 L560 166 q60 -2 96 14 l64 28 q10 6 4 14 l-14 16 -530 0 q-24 0 -30 -18 z" />
-        <path d="M162 196 q14 -20 44 -23 l40 -3 -6 26 z" opacity="0.85" />
-        <path d="M710 238 l60 -34" opacity="0.8" />
-        <path d="M236 168 l10 -52 26 0 8 50" />
-        <path d="M596 170 l14 -74 30 0 10 72" />
-        <path d="M230 238 l0 22 M214 260 l32 0 M602 238 l0 22 M586 260 l32 0" />
-        <circle cx="222" cy="266" r="7" />
-        <circle cx="240" cy="266" r="7" />
-        <circle cx="594" cy="266" r="7" />
-        <circle cx="612" cy="266" r="7" />
-        <circle cx="176" cy="216" r="7" opacity="0.85" />
+        {/* sealed faceted fuselage — no cockpit, no windows */}
+        <path d="M118 202 L112 186 Q116 164 142 156 L610 145 L688 141 Q712 142 724 150 L758 168 Q766 174 760 182 L706 218 Q696 224 680 224 L156 226 Q130 224 118 202 Z" />
+        {/* facet chine */}
+        <path d="M132 186 L716 174" opacity="0.55" />
+        {/* frame stations */}
+        <path d="M200 150 L200 224 M280 148 L280 224 M340 148 L340 224 M660 143 L660 222" opacity="0.22" />
+        {/* ramp inner line */}
+        <path d="M688 220 L744 178" opacity="0.7" />
+        {/* front pylon with intake hatching */}
+        <path d="M240 150 L252 96 Q256 88 268 88 L286 88 Q296 88 299 96 L308 150" />
+        <path d="M254 118 L266 112 M254 128 L268 121 M255 138 L270 130" opacity="0.6" />
+        {/* rear pylon, taller, with intakes + exhaust stubs */}
+        <path d="M568 146 L582 66 Q586 58 598 58 L620 58 Q630 58 633 66 L644 143" />
+        <path d="M580 100 L596 92 M580 112 L598 103 M581 124 L600 114" opacity="0.6" />
+        <path d="M633 76 L652 72 M633 84 L652 80 M652 72 L652 80" opacity="0.85" />
+        {/* spine antennas + GPS dome */}
+        <path d="M322 147 L326 139 L330 147 M442 146 L446 138 L450 146" />
+        <path d="M497 145 Q505 137 513 144" />
+        {/* EO/IR sensor turret */}
+        <circle cx="162" cy="232" r="9" />
+        {/* gear: sponsons, struts, twin wheels each */}
+        <rect x="218" y="224" width="48" height="12" rx="5" />
+        <rect x="584" y="223" width="48" height="12" rx="5" />
+        <path d="M228 236 L228 246 M252 236 L252 246 M594 235 L594 246 M618 235 L618 246" />
+        <circle cx="228" cy="252" r="8" />
+        <circle cx="252" cy="252" r="8" />
+        <circle cx="594" cy="252" r="8" />
+        <circle cx="618" cy="252" r="8" />
+        <circle cx="228" cy="252" r="2.4" opacity="0.8" />
+        <circle cx="252" cy="252" r="2.4" opacity="0.8" />
+        <circle cx="594" cy="252" r="2.4" opacity="0.8" />
+        <circle cx="618" cy="252" r="2.4" opacity="0.8" />
       </g>
-      <g stroke="url(#heroGrad)" strokeWidth="1.6" fill="none" strokeLinecap="round">
-        <path d="M64 108 L454 104" />
-        <path d="M120 96 L400 118" opacity="0.45" />
-        <path d="M436 86 L866 78" />
-        <path d="M492 70 L812 96" opacity="0.45" />
-        <circle cx="259" cy="106" r="4" fill="#3E6FE6" stroke="none" />
-        <circle cx="651" cy="82" r="4" fill="#7A3BE0" stroke="none" />
+
+      {/* modular payload bay — dashed, with corner locks and internal label */}
+      <g stroke="var(--steel)" fill="none">
+        <rect x="380" y="180" width="180" height="42" strokeWidth="1.1" strokeDasharray="5 4" />
+        <circle cx="380" cy="180" r="2.2" />
+        <circle cx="560" cy="180" r="2.2" />
+        <circle cx="380" cy="222" r="2.2" />
+        <circle cx="560" cy="222" r="2.2" />
       </g>
-      <g stroke="var(--steel)" strokeWidth="1" opacity="0.75">
-        <path d="M150 302 L774 302" />
-        <path d="M150 296 L150 308 M774 296 L774 308" />
-        <path d="M259 106 L259 60 M651 82 L651 46" strokeDasharray="4 4" opacity="0.6" />
+
+      {/* rotors + hubs + LED strip + turret lens: brand gradient = live systems */}
+      <g stroke="url(#heroGrad)" strokeWidth="1.4" fill="none" strokeLinecap="round">
+        {/* fwd rotor: bladed chord pair + foreshortened third blade */}
+        <path d="M96 90 L452 76 M96 94 L452 80 M96 90 L96 94 M452 76 L452 80" />
+        <path d="M274 84 L322 98" strokeWidth="2.6" opacity="0.8" />
+        {/* aft rotor */}
+        <path d="M428 62 L786 42 M428 66 L786 46 M428 62 L428 66 M786 42 L786 46" />
+        <path d="M606 54 L656 68" strokeWidth="2.6" opacity="0.8" />
+        {/* LED nav strip, split so it never crosses the bay label */}
+        <path d="M158 212 L374 210 M566 210 L676 209" strokeWidth="1" opacity="0.9" />
       </g>
-      <g stroke="var(--steel)" strokeWidth="1" opacity="0.7">
-        <path d="M330 176 L330 132 L392 132" />
-        <path d="M690 210 L744 172 L800 172" />
+      <g fill="none">
+        <circle cx="274" cy="84" r="5" stroke="url(#heroGrad)" strokeWidth="1.6" />
+        <circle cx="606" cy="54" r="5" stroke="url(#heroGrad)" strokeWidth="1.6" />
+        <circle cx="274" cy="84" r="1.8" fill="#3E6FE6" />
+        <circle cx="606" cy="54" r="1.8" fill="#7A3BE0" />
+        <circle cx="162" cy="232" r="3.2" fill="#2BC7DF" />
       </g>
+
+      {/* CG symbol — kept clear of the bay label */}
+      <g>
+        <circle cx="318" cy="194" r="7" fill="none" stroke="var(--steel)" strokeWidth="1" />
+        <path d="M318 187 A7 7 0 0 1 325 194 L318 194 Z" fill="var(--steel)" />
+        <path d="M318 201 A7 7 0 0 1 311 194 L318 194 Z" fill="var(--steel)" />
+      </g>
+
+      {/* ground + dimensions + leaders */}
+      <g stroke="var(--steel)" strokeWidth="1" opacity="0.7" fill="none">
+        <path d="M100 264 L820 264" opacity="0.5" />
+        <path d="M118 284 L764 284 M118 278 L118 290 M764 278 L764 290" />
+        <path d="M274 50 L274 77 M607 32 L607 47" strokeDasharray="4 4" />
+        <path d="M500 116 L500 142" />
+        <path d="M152 228 L120 214" />
+        <path d="M744 196 L780 210" />
+      </g>
+
+      {/* labels */}
       <g
         fill="var(--steel)"
         fontFamily="'IBM Plex Mono', monospace"
         fontSize="10.5"
         letterSpacing="0.08em"
       >
-        <text x="462" y="316" textAnchor="middle">OVERALL LENGTH 22.4 M</text>
-        <text x="259" y="52" textAnchor="middle">FWD ROTOR</text>
-        <text x="651" y="38" textAnchor="middle">AFT ROTOR Ø 16.2 M</text>
-        <text x="398" y="136">AUTONOMY BAY</text>
-        <text x="806" y="176">CARGO RAMP</text>
-        <text x="150" y="290">EURUS SYSTEMS · MAAP-1 · TANDEM-ROTOR HEAVY-LIFT · UNCREWED</text>
+        <text x="16" y="22">EURUS SYSTEMS · MAAP-1 · TANDEM-ROTOR HEAVY-LIFT UAS</text>
+        <text x="274" y="44" textAnchor="middle">FWD ROTOR</text>
+        <text x="607" y="26" textAnchor="middle">AFT ROTOR Ø 16.2 M</text>
+        <text x="16" y="134">SEALED NOSE — NO COCKPIT</text>
+        <text x="500" y="110" textAnchor="middle">AUTONOMY BAY</text>
+        <text x="16" y="210">EO/IR SENSOR TURRET</text>
+        <text x="784" y="214">CARGO RAMP</text>
+        <text x="470" y="205" textAnchor="middle" fontSize="9.5">MODULAR PAYLOAD BAY</text>
+        <text x="441" y="298" textAnchor="middle">OVERALL LENGTH 22.4 M</text>
+      </g>
+
+      {/* ---- interchangeable mission modules ---- */}
+      <g fontFamily="'IBM Plex Mono', monospace" letterSpacing="0.08em">
+        <text x="118" y="332" fontSize="11" fill="url(#heroGrad)">INTERCHANGEABLE MISSION MODULES</text>
+        <text x="380" y="332" fontSize="11" fill="var(--steel)">— SAME AIR VEHICLE · THREE CONFIGURATIONS</text>
+
+        {/* CARGO module */}
+        <g>
+          <rect x="118" y="344" width="170" height="64" fill="none" stroke="var(--steel)" strokeWidth="1.2" />
+          <text x="134" y="360" fontSize="10" fill="url(#heroGrad)">CARGO</text>
+          <g stroke="var(--steel)" strokeWidth="1" fill="none" opacity="0.85">
+            <rect x="140" y="368" width="96" height="26" />
+            <path d="M164 368 L164 394 M188 368 L188 394 M212 368 L212 394" />
+            <path d="M140 368 L236 394 M236 368 L140 394" opacity="0.45" />
+          </g>
+          <text x="246" y="384" fontSize="8.5" fill="var(--steel)" opacity="0.85">PALLET</text>
+        </g>
+
+        {/* FIREFIGHTING module */}
+        <g>
+          <rect x="338" y="344" width="170" height="64" fill="none" stroke="var(--steel)" strokeWidth="1.2" />
+          <text x="354" y="360" fontSize="10" fill="url(#heroGrad)">FIREFIGHTING</text>
+          <g stroke="var(--steel)" strokeWidth="1" fill="none" opacity="0.85">
+            <rect x="356" y="368" width="112" height="22" rx="10" />
+            <path d="M392 390 L392 396 M428 390 L428 396" />
+            <path d="M398 399 L395 404 M414 399 L411 404 M430 399 L427 404" opacity="0.7" />
+          </g>
+          <text x="476" y="382" fontSize="8.5" fill="var(--steel)" opacity="0.85">TANK</text>
+        </g>
+
+        {/* ISR module */}
+        <g>
+          <rect x="558" y="344" width="170" height="64" fill="none" stroke="var(--steel)" strokeWidth="1.2" />
+          <text x="574" y="360" fontSize="10" fill="url(#heroGrad)">ISR</text>
+          <g stroke="var(--steel)" strokeWidth="1" fill="none" opacity="0.85">
+            <rect x="576" y="366" width="124" height="8" />
+            <path d="M600 374 L600 384 M638 374 L638 384 M674 374 L674 384" />
+            <circle cx="600" cy="390" r="5.5" />
+            <circle cx="638" cy="390" r="5.5" />
+            <circle cx="674" cy="390" r="5.5" />
+          </g>
+        </g>
+
+        <text x="118" y="434" fontSize="10.5" fill="var(--steel)">
+          EACH MODULE LOCKS INTO THE COMMON PAYLOAD BAY · ONE BASELINE AIRFRAME, THREE MISSIONS
+        </text>
       </g>
     </svg>
   );
@@ -209,7 +312,7 @@ const FLOW = [
  */
 const BASELINE_STATS = [
   { value: "19", label: "controlled documents" },
-  { value: "213,832", label: "words of program baseline" },
+  { value: "213,832", label: "words of baseline (~855 pages)" },
   { value: "3", label: "mission-variant drawing trees" },
   { value: "40+", label: "tracked risks, scored & owned" },
   { value: "5", label: "specialist agents per run" },
